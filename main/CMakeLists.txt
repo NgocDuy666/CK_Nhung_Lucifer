@@ -1,0 +1,29 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "core/app_state.c"
+        "drivers/sensors.c"
+        "drivers/lcd_i2c.c"
+        "drivers/actuators.c"
+        "drivers/buttons.c"
+        "tasks/app_timers.c"
+        "tasks/task_dht.c"
+        "tasks/task_light.c"
+        "tasks/task_button.c"
+        "tasks/task_control.c"
+        "tasks/task_alarm.c"
+        "tasks/task_lcd.c"
+        "tasks/task_cli.c"
+    INCLUDE_DIRS
+        "."
+        "core"
+        "drivers"
+        "tasks"
+    REQUIRES
+        esp_driver_gpio
+        esp_driver_i2c
+        esp_driver_ledc
+        esp_adc
+        esp_timer
+        nvs_flash
+)
