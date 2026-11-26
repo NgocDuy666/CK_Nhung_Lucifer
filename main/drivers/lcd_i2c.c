@@ -2,6 +2,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "driver/gpio.h"
 #include "driver/i2c_master.h"
 #include "esp_log.h"
 #include "esp_rom_sys.h"
@@ -53,8 +54,53 @@ static void lcd_cmd(uint8_t cmd)
     lcd_send(cmd, 0);
 }
 
+/*
+ * Recover I2C bus if PCF8574 was left holding SDA LOW after an ESP32-C3 soft reset
+ * (Standard I2C spec: send up to 9 SCL clock pulses followed by a STOP condition).
+ */
+static void i2c_bus_recover(void)
+{
+    gpio_config_t io = {
+        .pin_bit_mask = (1ULL << I2C_SDA_GPIO) | (1ULL << I2C_SCL_GPIO),
+        .mode         = GPIO_MODE_INPUT_OUTPUT_OD,
+        .pull_up_en   = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type    = GPIO_INTR_DISABLE,
+    };
+    gpio_config(&io);
+    gpio_set_level(I2C_SDA_GPIO, 1);
+    gpio_set_level(I2C_SCL_GPIO, 1);
+    esp_rom_delay_us(10);
+
+    if (gpio_get_level(I2C_SDA_GPIO) == 0) {
+        ESP_LOGW(TAG, "I2C SDA stuck LOW -> sending 9 recovery clocks");
+        for (int i = 0; i < 9; i++) {
+            gpio_set_level(I2C_SCL_GPIO, 0);
+            esp_rom_delay_us(10);
+            gpio_set_level(I2C_SCL_GPIO, 1);
+            esp_rom_delay_us(10);
+            if (gpio_get_level(I2C_SDA_GPIO) == 1) {
+                break;
+            }
+        }
+        /* Generate STOP condition */
+        gpio_set_level(I2C_SDA_GPIO, 0);
+        esp_rom_delay_us(10);
+        gpio_set_level(I2C_SCL_GPIO, 1);
+        esp_rom_delay_us(10);
+        gpio_set_level(I2C_SDA_GPIO, 1);
+        esp_rom_delay_us(10);
+    }
+    gpio_reset_pin(I2C_SDA_GPIO);
+    gpio_reset_pin(I2C_SCL_GPIO);
+}
+
 esp_err_t lcd_init(void)
 {
+    /* Wait briefly for LCD 5V power rail to stabilize, then recover bus if needed */
+    vTaskDelay(pdMS_TO_TICKS(100));
+    i2c_bus_recover();
+
     i2c_master_bus_config_t bus_cfg = {
         .i2c_port                     = I2C_NUM_0,
         .sda_io_num                   = I2C_SDA_GPIO,
@@ -69,13 +115,33 @@ esp_err_t lcd_init(void)
         return err;
     }
 
-    uint8_t addr = LCD_I2C_ADDR;
-    if (i2c_master_probe(s_bus, LCD_I2C_ADDR, 50) != ESP_OK) {
-        if (i2c_master_probe(s_bus, LCD_I2C_ADDR_ALT, 50) != ESP_OK) {
-            ESP_LOGE(TAG, "LCD not found at 0x%02X or 0x%02X", LCD_I2C_ADDR, LCD_I2C_ADDR_ALT);
+    uint8_t addr = 0;
+    for (int attempt = 0; attempt < 3 && addr == 0; attempt++) {
+        if (i2c_master_probe(s_bus, LCD_I2C_ADDR, 100) == ESP_OK) {
+            addr = LCD_I2C_ADDR;
+        } else if (i2c_master_probe(s_bus, LCD_I2C_ADDR_ALT, 100) == ESP_OK) {
+            addr = LCD_I2C_ADDR_ALT;
+        } else {
+            vTaskDelay(pdMS_TO_TICKS(100));
+        }
+    }
+
+    if (addr == 0) {
+        /* Scan full 7-bit I2C range to help diagnose custom backpack addresses */
+        bool found_any = false;
+        for (uint8_t a = 0x08; a <= 0x77; a++) {
+            if (i2c_master_probe(s_bus, a, 30) == ESP_OK) {
+                ESP_LOGW(TAG, "I2C device found at unexpected addr 0x%02X", a);
+                addr = a;
+                found_any = true;
+                break;
+            }
+        }
+        if (!found_any) {
+            ESP_LOGE(TAG, "No I2C device found on SDA=GPIO%d SCL=GPIO%d (check 5V/GND/SDA/SCL wiring)",
+                     I2C_SDA_GPIO, I2C_SCL_GPIO);
             return ESP_ERR_NOT_FOUND;
         }
-        addr = LCD_I2C_ADDR_ALT;
     }
     ESP_LOGI(TAG, "LCD 16x2 detected at I2C 0x%02X", addr);
 

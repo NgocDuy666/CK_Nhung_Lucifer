@@ -40,11 +40,22 @@ void alarm_task(void *arg)
                 bool is_crit = ((bits & EVT_TEMP_CRIT) != 0) ||
                                ((bits & EVT_HEAT_STRESS_MASK) == EVT_HEAT_STRESS_MASK);
                 pulse_on = !pulse_on;
-                actuator_set_alarm_led(pulse_on);
-                actuator_set_buzzer(pulse_on);
 
-                if (pulse_on && is_crit) {
-                    ESP_LOGW(TAG, "CRITICAL ALARM ACTIVE (bits=0x%02X)", (unsigned)bits);
+                if (is_crit) {
+                    /* Critical: fast 250 ms LED + Buzzer alternating alarm */
+                    actuator_set_alarm_led(pulse_on);
+                    actuator_set_buzzer(pulse_on);
+                    if (pulse_on) {
+                        ESP_LOGW(TAG, "CRITICAL ALARM ACTIVE (bits=0x%02X)", (unsigned)bits);
+                    }
+                } else {
+                    /* Warning: LED blinks every 1 s, buzzer gives a brief 120 ms chirp */
+                    actuator_set_alarm_led(pulse_on);
+                    if (pulse_on) {
+                        actuator_set_buzzer(true);
+                        vTaskDelay(pdMS_TO_TICKS(120));
+                        actuator_set_buzzer(false);
+                    }
                 }
             }
 

@@ -132,6 +132,10 @@ void lcd_gatekeeper_task(void *arg)
         /* Read latest snapshot via Mailbox xQueuePeek & config via Mutex */
         app_state_peek_snapshot(&snap);
         if (app_state_get_config(&cfg)) {
+            if (notify_bits & (NOTIFY_LCD_MENU | NOTIFY_LCD_HOME)) {
+                ESP_LOGI(TAG, "Display switched -> UI Page %d (Mode=%s)",
+                         (int)cfg.ui_page, cfg.mode == SYS_MODE_AUTO ? "AUTO" : "MANUAL");
+            }
             render_screen(&snap, &cfg);
         }
     }

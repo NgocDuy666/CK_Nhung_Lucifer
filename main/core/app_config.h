@@ -51,7 +51,7 @@
 
 #define DEFAULT_TEMP_WARN_C     30.0f
 #define DEFAULT_TEMP_CRIT_DELTA 5.0f                /* Crit = Warn + 5 C */
-#define DEFAULT_HUM_HIGH_PCT    80.0f
+#define DEFAULT_HUM_HIGH_PCT    92.0f               /* Above humid ambient (~86%), triggers easily when breathing on DHT22 */
 #define DEFAULT_LIGHT_LOW_PCT   40
 
 #define TEMP_HYSTERESIS_C       1.5f
@@ -61,7 +61,7 @@
 #define TEMP_WARN_MIN_C         20.0f
 #define TEMP_WARN_MAX_C         45.0f
 #define HUM_HIGH_MIN_PCT        40.0f
-#define HUM_HIGH_MAX_PCT        95.0f
+#define HUM_HIGH_MAX_PCT        99.0f
 #define LIGHT_LOW_MIN_PCT       10
 #define LIGHT_LOW_MAX_PCT       80
 
@@ -77,7 +77,7 @@
 #define LIGHT_PERIOD_MS         500
 
 #define BTN_DEBOUNCE_MS         50
-#define BTN_LONG_PRESS_MS       1200
+#define BTN_LONG_PRESS_MS       1500
 #define UI_MENU_TIMEOUT_MS      10000
 #define UI_TOAST_DURATION_MS    2000
 #define ALARM_MUTE_DURATION_MS  30000

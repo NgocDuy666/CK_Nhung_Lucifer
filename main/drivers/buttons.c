@@ -82,8 +82,15 @@ esp_err_t buttons_init(void)
     err = gpio_isr_handler_add(BTN_DOWN_GPIO, btn_step_isr_handler, (void *)(uintptr_t)BTN_ID_DOWN);
     if (err != ESP_OK) return err;
 
-    ESP_LOGI(TAG, "Buttons ISR ready (MENU=GPIO%d, UP=GPIO%d, DOWN=GPIO%d)",
-             BTN_MENU_GPIO, BTN_UP_GPIO, BTN_DOWN_GPIO);
+    ESP_LOGI(TAG, "Buttons ISR ready (MENU=GPIO%d[%d], UP=GPIO%d[%d], DOWN=GPIO%d[%d])",
+             BTN_MENU_GPIO, gpio_get_level(BTN_MENU_GPIO),
+             BTN_UP_GPIO,   gpio_get_level(BTN_UP_GPIO),
+             BTN_DOWN_GPIO, gpio_get_level(BTN_DOWN_GPIO));
+    if (gpio_get_level(BTN_MENU_GPIO) == 0 ||
+        gpio_get_level(BTN_UP_GPIO) == 0 ||
+        gpio_get_level(BTN_DOWN_GPIO) == 0) {
+        ESP_LOGW(TAG, "One or more buttons read LOW (0) at boot! Check 4-pin button orientation.");
+    }
     return ESP_OK;
 }
 

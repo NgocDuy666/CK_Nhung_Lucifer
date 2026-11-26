@@ -35,14 +35,14 @@ static void send_cmd(cmd_type_t type, int32_t value, bool urgent)
 
 static void handle_menu_button(void)
 {
-    /* Wait 30 ms to confirm genuine press (software debounce) */
-    vTaskDelay(pdMS_TO_TICKS(30));
+    /* Wait 20 ms to confirm genuine press (software debounce) */
+    vTaskDelay(pdMS_TO_TICKS(20));
     if (!buttons_is_pressed(BTN_ID_MENU)) {
         return;
     }
 
-    /* Measure hold time to distinguish Short Press vs Long Press (>= 1.2 s) */
-    uint32_t held_ms = 30;
+    /* Measure hold time to distinguish Short Press vs Long Press (>= 1.5 s) */
+    uint32_t held_ms = 20;
     while (buttons_is_pressed(BTN_ID_MENU) && held_ms < BTN_LONG_PRESS_MS) {
         vTaskDelay(pdMS_TO_TICKS(50));
         held_ms += 50;
