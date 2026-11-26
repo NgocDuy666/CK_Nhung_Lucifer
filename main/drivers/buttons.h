@@ -1,7 +1,7 @@
 #pragma once
 /*
  * buttons.h - 3-Button GPIO Interrupt (ISR) driver using FreeRTOS Ch. 7 patterns:
- *   - BTN_MENU (GPIO0): Binary Semaphore (xSemaphoreGiveFromISR)
+ *   - BTN_MENU (GPIO2): Binary Semaphore (xSemaphoreGiveFromISR)
  *   - BTN_UP   (GPIO1): Counting Semaphore + ISR Queue (xQueueSendToBackFromISR)
  *   - BTN_DOWN (GPIO9): Counting Semaphore + ISR Queue (xQueueSendToBackFromISR)
  *   - Deferred work to RTOS Daemon Task (xTimerPendFunctionCallFromISR)

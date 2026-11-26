@@ -19,7 +19,7 @@
 #define LCD_I2C_FREQ_HZ         100000
 
 /* Final project added inputs (3 buttons, active-LOW w/ internal pull-up) */
-#define BTN_MENU_GPIO           GPIO_NUM_0          /* Short: next menu page | Hold: save & exit */
+#define BTN_MENU_GPIO           GPIO_NUM_2          /* Short: next menu page | Hold: save & exit (OPEN=HIGH at boot) */
 #define BTN_UP_GPIO             GPIO_NUM_1          /* Value + / Fan + / Mute alarm */
 #define BTN_DOWN_GPIO           GPIO_NUM_9          /* Value - / Fan - / Mute alarm (also BOOT btn) */
 
@@ -27,13 +27,14 @@
 #define FAN_PWM_GPIO            GPIO_NUM_7          /* L298N ENA or MOSFET PWM input (0..100%) */
 #define LAMP_GPIO               GPIO_NUM_10         /* Lamp LED / Relay */
 #define ALARM_LED_GPIO          GPIO_NUM_8          /* Red Alarm LED (or onboard LED) */
-#define BUZZER_GPIO             GPIO_NUM_2          /* 3-pin Buzzer module */
+#define BUZZER_GPIO             GPIO_NUM_0          /* Bare 2-pin Buzzer: (+) -> GPIO0 (via 100R), (-) -> GND */
 
 /*
- * Set to 1 for Passive Buzzer / Wokwi Piezo (uses LEDC PWM tone).
- * Set to 0 for Active Buzzer (simple GPIO HIGH/LOW).
+ * Bare 2-pin Buzzer (+/-) mode:
+ *   0 = Active Buzzer (default - simple GPIO HIGH/LOW, most 2-pin buzzers with '+' mark)
+ *   1 = Passive Buzzer (uses LEDC 2 kHz PWM tone if bare buzzer only clicks at 0)
  */
-#define BUZZER_PASSIVE_PWM      1
+#define BUZZER_PASSIVE_PWM      0
 #define BUZZER_PWM_FREQ_HZ      2000
 
 /*

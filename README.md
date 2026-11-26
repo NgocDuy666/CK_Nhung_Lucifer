@@ -44,15 +44,15 @@ CK_Nhung_Lucifer/
 | **Quạt 24V PWM** | `GPIO7` | Nối vào `ENA` của **L298N** *(tháo jumper `ENA`, nối cứng `IN1→5V/3.3V`, `IN2→GND`)* hoặc chân tín hiệu **MOSFET PWM**. **BẮT BUỘC tháo jumper `5V_EN` trên L298N khi cấp 24V**, cấp 5V riêng vào cọc `+5V` và **nối chung GND**! |
 | **Đèn chiếu sáng (LED)** | `GPIO10` | Qua trở 220Ω → GND |
 | **Đèn cảnh báo (LED Đỏ)** | `GPIO8` | Qua trở 220Ω → GND (hoặc LED onboard GPIO8) |
-| **Buzzer (Module 3 chân)** | `GPIO2` | Sửa `#define BUZZER_PASSIVE_PWM` trong `app_config.h` (`1` = Passive, `0` = Active) |
-| **Nút `BTN_MENU`** | `GPIO0` | Nối giữa `GPIO0` và `GND` (pull-up nội) |
+| **Buzzer 2 chân (`+` / `-`)** | `GPIO0` | Chân dài (`+`) nối `GPIO0` *(nên nối tiếp trở 100Ω bảo vệ chân GPIO)*, chân ngắn (`-`) nối `GND`. Mặc định `BUZZER_PASSIVE_PWM 0` (Active); nếu là loại Passive thì đổi thành `1` trong `app_config.h` |
+| **Nút `BTN_MENU`** | `GPIO2` | Nối giữa `GPIO2` và `GND` (pull-up nội, nhả ra khi khởi động) |
 | **Nút `BTN_UP`** | `GPIO1` | Nối giữa `GPIO1` và `GND` (pull-up nội) |
 | **Nút `BTN_DOWN`** | `GPIO9` | Nối giữa `GPIO9` và `GND` (cùng chân nút `BOOT`; không giữ khi reset) |
 
 ## 3. Hướng dẫn sử dụng 3 nút nhấn & Menu LCD 16x2
 
 - **Màn hình chính (`Page 0`):**
-  - Bấm ngắn **`BTN_MENU`**: Vào menu cài đặt (`Page 1 → 6 → tự lưu & về Page 0`).
+  - Bấm ngắn **`BTN_MENU (GPIO2)`**: Vào menu cài đặt (`Page 1 → 6 → tự lưu & về Page 0`).
   - Nhấn giữ **`BTN_MENU` (≥ 1.2s)**: Đổi nhanh chế độ **`AUTO ↔ MANUAL`** (nếu đang ở trong Menu thì **Lưu NVS ngay & thoát về màn hình chính**).
   - Bấm **`BTN_UP` / `BTN_DOWN`**:
     - Khi có cảnh báo đang kêu → **Mute còi 30 giây** ngay lập tức (`xQueueSendToFront`).
